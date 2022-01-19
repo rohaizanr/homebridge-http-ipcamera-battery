@@ -1,8 +1,9 @@
-let Service, Characteristic
+let API, Service, Characteristic
 const packageJson = require('./package.json')
 const request = require('request')
 
 module.exports = function (homebridge) {
+  API = homebridge;
   Service = homebridge.hap.Service
   Characteristic = homebridge.hap.Characteristic
   homebridge.registerAccessory('homebridge-http-ipcamera-battery', 'iPCameraBattery', iPCameraBattery)
@@ -22,9 +23,8 @@ function iPCameraBattery (log, config) {
 
   this.timeout = config.timeout || 3000
 
-  this.service = new Service.BatteryLevel(this.name)
-  
-  this.BatteryLevel = 0
+  this.CurrentTemperature = null;
+  this.BatteryLevel = null;
 }
 
 iPCameraBattery.prototype = {
@@ -53,17 +53,27 @@ iPCameraBattery.prototype = {
     this._httpRequest(url, function (error, response, responseBody) {
       if (error) {
         this.log.warn('Error getting status: %s', error.message)
-        //this.service.getCharacteristic(Characteristic.BatteryLevel, this.BatteryLevel)
-        this.BatteryLevel = 0
+        this.TemperatureSensor.getCharacteristic(Characteristic.CurrentTemperature).updateValue(new Error('Polling failed'))
+        this.BatteryService.getCharacteristic(Characteristic.BatteryLevel).updateValue(new Error('Polling failed'))
         callback(error)
       } else {
         this.log.debug('Device response: %s', responseBody)
         try {
           const json = JSON.parse(responseBody)
-          //this.service.getCharacteristic(Characteristic.BatteryLevel).updateValue(json.BatteryLevel)
           var batteryString = ""
           batteryString = json.battery
           this.BatteryLevel = batteryString.replace(" %", "")
+          this.CurrentTemperature = this.BatteryLevel 
+
+          this.BatteryService.getCharacteristic(Characteristic.BatteryLevel).updateValue(this.BatteryLevel)
+          this.TemperatureSensor.getCharacteristic(Characteristic.CurrentTemperature).updateValue(this.CurrentTemperature);
+          if(this.BatteryLevel <= 10) {
+            this.BatteryService.setCharacteristic(Characteristic.StatusLowBattery, Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW);
+          }
+          else {
+            this.BatteryService.setCharacteristic(Characteristic.StatusLowBattery, Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL);
+          }
+
           this.log.debug('Updated BatteryLevel to: %s', this.BatteryLevel)
           callback()
         } catch (e) {
@@ -81,22 +91,18 @@ iPCameraBattery.prototype = {
       .setCharacteristic(Characteristic.SerialNumber, this.serial)
       .setCharacteristic(Characteristic.FirmwareRevision, this.firmware)
 
-    // Set the Battery Level
-    this.service.setCharacteristic(Characteristic.BatteryLevel, this.BatteryLevel);
-    // Set the Status Low Battery
-    if(this.BatteryLevel <= 10) {
-      this.service.setCharacteristic(Characteristic.StatusLowBattery, Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW);
-    }
-    else {
-      this.service.setCharacteristic(Characteristic.StatusLowBattery, Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL);
-    }
+    // Temperature Sensor service
+		this.TemperatureSensor = new Service.TemperatureSensor(this.name);
 
+		// Battery service
+    this.BatteryService = new Service.BatteryService(this.name);
+    
     this._getStatus(function () {})
 
     setInterval(function () {
       this._getStatus(function () {})
     }.bind(this), this.pollInterval * 1000)
 
-    return [this.informationService, this.service]
+    return [this.informationService, this.BatteryService, this.TemperatureSensor]
   }
 }

@@ -12,6 +12,10 @@
 
 This [homebridge](https://github.com/homebridge/homebridge) plugin exposes a web-based battery status to Apple's [HomeKit](http://www.apple.com/ios/home/). Using simple HTTP requests, the plugin displays the battery status of [iPCamera - High-End NetworkCam (iOS App)](https://apps.apple.com/us/app/ipcamera-high-end-networkcam/id570912928).
 
+I need some automation when the battery is at certain percentage, I want to switch on the iPhone charger. Too bad we can't do automation with BatteryService, but we can with TemperaturService. That is why I displayed the battery level in degress.
+
+I modified the codes I found [here](https://github.com/phenotypic/homebridge-http-thermometer). Thanks phenotypic.
+
 ## Installation
 
 1. Install [homebridge](https://github.com/homebridge/homebridge#installation)
