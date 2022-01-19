@@ -1,0 +1,29 @@
+{
+  "name": "homebridge-http-ipcamera-battery",
+  "version": "1.0.0",
+  "description": "Homebridge plugin for displaying the battery status of iPCamera - High-End NetworkCam (iOS App)",
+  "main": "index.js",
+  "dependencies": {
+    "request": ">=2.88.0"
+  },
+  "engines": {
+    "homebridge": ">=0.4.50",
+    "node": ">=12.13.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rohaizanr/homebridge-http-ipcamera-battery.git"
+  },
+  "keywords": [
+    "homebridge-plugin"
+  ],
+  "author": "rohaizanr",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rohaizanr/homebridge-http-ipcamera-battery/issues"
+  },
+  "homepage": "https://github.com/rohaizanr/homebridge-http-ipcamera-battery/#readme"
+}
